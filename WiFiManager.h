@@ -623,6 +623,7 @@ class WiFiManager
     // build debuglevel support
     // @todo use DEBUG_ESP_x?
     
+    #ifndef NO_GLOBAL_SERIAL
     // Set default debug level
     #ifndef WM_DEBUG_LEVEL
     #define WM_DEBUG_LEVEL DEBUG_VERBOSE // development default, not release
@@ -645,6 +646,7 @@ class WiFiManager
     #else
     Stream& _debugPort = Serial; // debug output stream ref
     #endif
+    #endif //NO_GLOBAL_SERIAL
 
     template <typename Generic>
     void        DEBUG_WM(Generic text);

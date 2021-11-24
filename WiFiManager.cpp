@@ -199,9 +199,16 @@ int WiFiManager::getParametersCount() {
 **/
 
 // constructors
+#ifndef NO_GLOBAL_SERIAL
 WiFiManager::WiFiManager(Stream& consolePort):_debugPort(consolePort){
   WiFiManagerInit();
 }
+#else
+WiFiManager::WiFiManager(Stream& consolePort)
+{
+  WiFiManagerInit();
+}
+#endif
 
 WiFiManager::WiFiManager() {
   WiFiManagerInit();  
@@ -209,7 +216,9 @@ WiFiManager::WiFiManager() {
 
 void WiFiManager::WiFiManagerInit(){
   setMenu(_menuIdsDefault);
+  #ifndef NO_GLOBAL_SERIAL
   if(_debug && _debugLevel >= DEBUG_DEV) debugPlatformInfo();
+  #endif
   _max_params = WIFI_MANAGER_MAX_PARAMS;
 }
 
@@ -474,7 +483,9 @@ bool WiFiManager::startAP(){
     }  
   }
 
+  #ifndef NO_GLOBAL_SERIAL
   if(_debugLevel >= DEBUG_DEV) debugSoftAPConfig();
+  #endif
 
   // @todo add softAP retry here
   
@@ -550,7 +561,8 @@ boolean WiFiManager::configPortalHasTimeout(){
       DEBUG_WM(F("config portal has timed out"));
       #endif
       return true; // timeout bail, else do debug logging
-    } 
+    }
+    #ifndef NO_GLOBAL_SERIAL 
     else if(_debug && _debugLevel > 0) {
       // log timeout time remaining every 30s
       if((millis() - timer) > logintvl){
@@ -560,6 +572,7 @@ boolean WiFiManager::configPortalHasTimeout(){
         #endif
       }
     }
+    #endif
 
     return false;
 }
@@ -2505,8 +2518,10 @@ void WiFiManager::setSaveConnect(bool connect) {
  * @param {[type]} boolean debug [description]
  */
 void WiFiManager::setDebugOutput(boolean debug) {
+  #ifndef NO_GLOBAL_SERIAL
   _debug = debug;
   if(_debug && _debugLevel == DEBUG_DEV) debugPlatformInfo();
+  #endif
 }
 
 void WiFiManager::setDebugOutput(boolean debug, String prefix) {
@@ -3052,7 +3067,9 @@ void WiFiManager::DEBUG_WM(Generic text) {
 
 template <typename Generic>
 void WiFiManager::DEBUG_WM(wm_debuglevel_t level,Generic text) {
+  #ifndef NO_GLOBAL_SERIAL
   if(_debugLevel >= level) DEBUG_WM(level,text,"");
+  #endif
 }
 
 template <typename Generic, typename Genericb>
@@ -3062,6 +3079,7 @@ void WiFiManager::DEBUG_WM(Generic text,Genericb textb) {
 
 template <typename Generic, typename Genericb>
 void WiFiManager::DEBUG_WM(wm_debuglevel_t level,Generic text,Genericb textb) {
+  #ifndef NO_GLOBAL_SERIAL
   if(!_debug || _debugLevel < level) return;
 
   if(_debugLevel >= DEBUG_MAX){
@@ -3095,6 +3113,7 @@ void WiFiManager::DEBUG_WM(wm_debuglevel_t level,Generic text,Genericb textb) {
     _debugPort.print(textb);
   }
   _debugPort.println();
+  #endif
 }
 
 /**
@@ -3593,7 +3612,9 @@ void WiFiManager::handleUpdating(){
 
   // UPLOAD START
 	if (upload.status == UPLOAD_FILE_START) {
+    #ifndef NO_GLOBAL_SERIAL
 	  if(_debug) Serial.setDebugOutput(true);
+    #endif
     uint32_t maxSketchSpace;
     
     // Use new callback for before OTA update
@@ -3624,7 +3645,9 @@ void WiFiManager::handleUpdating(){
 	}
   // UPLOAD WRITE
   else if (upload.status == UPLOAD_FILE_WRITE) {
+    #ifndef NO_GLOBAL_SERIAL
 		Serial.print(".");
+    #endif
 		if (Update.write(upload.buf, upload.currentSize) != upload.currentSize) {
       #ifdef WM_DEBUG_LEVEL
       DEBUG_WM(DEBUG_ERROR,F("[ERROR] OTA Update WRITE ERROR"), Update.getError());
@@ -3642,7 +3665,9 @@ void WiFiManager::handleUpdating(){
       #endif
 		}
     else {
+      #ifndef NO_GLOBAL_SERIAL
 			Update.printError(Serial);
+      #endif
       error = true;
 		}
 	}
